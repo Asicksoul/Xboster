@@ -1,0 +1,28 @@
+
+name: Build XBooster IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build app
+        run: |
+          xcodebuild -project XBooster.xcodeproj -scheme XBooster -configuration Release -sdk iphoneos -derivedDataPath build CODE_SIGNING_ALLOWED=NO
+
+      - name: Package IPA
+        run: |
+          mkdir -p Payload
+          cp -R build/Build/Products/Release-iphoneos/XBooster.app Payload/
+          zip -r XBooster-unsigned.ipa Payload
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: XBooster-unsigned-IPA
+          path: XBooster-unsigned.ipa
